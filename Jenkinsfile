@@ -117,7 +117,7 @@ pipeline {
                         sh """
                         set -e
 
-                        ssh -o StrictHostKeyChecking=no ec2-user@YOUR_EC2_IP '
+                        ssh -o StrictHostKeyChecking=no ec2-user@51.21.1.228 '
                             set -e
                             mkdir -p ${COMPOSE_DIR}
                         '
@@ -125,7 +125,7 @@ pipeline {
                         scp -o StrictHostKeyChecking=no docker-compose.yml \
                             ec2-user@YOUR_EC2_IP:${COMPOSE_DIR}/docker-compose.yml
 
-                        ssh -o StrictHostKeyChecking=no ec2-user@YOUR_EC2_IP '
+                        ssh -o StrictHostKeyChecking=no ec2-user@51.21.1.228 '
                             set -e
                             cd ${COMPOSE_DIR}
 
