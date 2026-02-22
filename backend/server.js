@@ -46,6 +46,11 @@ app.use('/api/production-orders', require('./routes/productionOrderRoutes'));
 const setupCronJobs = require('./cron/salaryCron');
 setupCronJobs();
 
+// Health Check
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'UP', timestamp: new Date() });
+});
+
 // Error Handler Middleware
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
@@ -58,6 +63,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
