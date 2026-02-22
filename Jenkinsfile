@@ -6,6 +6,7 @@ pipeline {
     options {
         disableConcurrentBuilds()
         skipDefaultCheckout(true)
+        timestamps()
     }
 
     tools {
@@ -14,8 +15,8 @@ pipeline {
 
     environment {
         DOCKER_NAMESPACE = 'kshitij2511'
-        COMPOSE_DIR = '/home/ec2-user/naka'
         DEPLOY_HOST = '51.21.1.228'
+        COMPOSE_DIR = '/home/ec2-user/naka'
     }
 
     stages {
@@ -42,35 +43,31 @@ pipeline {
             }
         }
 
-        stage('Docker Login') {
+        stage('Generate Version') {
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'docker-hub-credentials',
-                        usernameVariable: 'DOCKER_LOGIN_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )
-                ]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_LOGIN_USER" --password-stdin
-                    '''
+                script {
+                    def shortSha = sh(
+                        script: "git rev-parse --short HEAD",
+                        returnStdout: true
+                    ).trim()
+
+                    env.IMAGE_VERSION = "${BUILD_NUMBER}-${shortSha}"
+                    echo "Image Version: ${env.IMAGE_VERSION}"
                 }
             }
         }
 
-        stage('Versioning') {
+        stage('Docker Login') {
             steps {
-                sh '''
-                    cd backend
-                    npm version patch --no-git-tag-version
-                    node -p "require('./package.json').version" > ../backend.version
-                    cd ..
-
-                    cd frontend
-                    npm version patch --no-git-tag-version
-                    node -p "require('./package.json').version" > ../frontend.version
-                    cd ..
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
+                }
             }
         }
 
@@ -95,29 +92,22 @@ pipeline {
 
         stage('Build & Push Images') {
             steps {
-                script {
-                    def backendVersion = readFile('backend.version').trim()
-                    def frontendVersion = readFile('frontend.version').trim()
+                sh """
+                    docker build -t ${DOCKER_NAMESPACE}/naka-backend:${IMAGE_VERSION} ./backend
+                    docker build -t ${DOCKER_NAMESPACE}/naka-frontend:${IMAGE_VERSION} ./frontend
 
-                    sh """
-                        docker build -t ${DOCKER_NAMESPACE}/naka-backend:v${backendVersion} ./backend
-                        docker build -t ${DOCKER_NAMESPACE}/naka-frontend:v${frontendVersion} ./frontend
-
-                        docker push ${DOCKER_NAMESPACE}/naka-backend:v${backendVersion}
-                        docker push ${DOCKER_NAMESPACE}/naka-frontend:v${frontendVersion}
-                    """
-                }
+                    docker push ${DOCKER_NAMESPACE}/naka-backend:${IMAGE_VERSION}
+                    docker push ${DOCKER_NAMESPACE}/naka-frontend:${IMAGE_VERSION}
+                """
             }
         }
 
         stage('Deploy to EC2') {
             steps {
-                script {
-                    def backendVersion = readFile('backend.version').trim()
-                    def frontendVersion = readFile('frontend.version').trim()
+                sshagent(['ec2-server-key']) {
+                    sh """
+                        set -e
 
-                    sshagent(['ec2-server-key']) {
-                        sh """
                         ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
                             mkdir -p ${COMPOSE_DIR}
                         '
@@ -126,18 +116,17 @@ pipeline {
                             ec2-user@${DEPLOY_HOST}:${COMPOSE_DIR}/docker-compose.yml
 
                         ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
+                            set -e
                             cd ${COMPOSE_DIR}
 
-                            export BACKEND_VERSION=v${backendVersion}
-                            export FRONTEND_VERSION=v${frontendVersion}
+                            export IMAGE_VERSION=${IMAGE_VERSION}
 
                             docker compose down --remove-orphans
                             docker compose pull
                             docker compose up -d
                             docker image prune -f
                         '
-                        """
-                    }
+                    """
                 }
             }
         }
@@ -145,10 +134,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI/CD completed successfully'
+            echo "✅ CI/CD completed successfully"
+            echo "🚀 Deployed version: ${env.IMAGE_VERSION}"
         }
         failure {
-            echo '❌ CI/CD failed'
+            echo "❌ CI/CD failed"
         }
         always {
             cleanWs()
