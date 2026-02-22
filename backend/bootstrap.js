@@ -19,7 +19,7 @@ const bootstrap = async () => {
             name: 'System Admin',
             email: 'admin@naka.com',
             password: 'adminpassword123', // You should change this after login
-            role: 'Admin'
+            role: 'admin'
         });
 
         console.log('Admin user created successfully');
