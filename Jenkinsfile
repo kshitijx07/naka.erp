@@ -10,7 +10,7 @@ pipeline {
     }
 
     tools {
-        nodejs 'node18'
+        nodejs 'node20'   // IMPORTANT: use Node 20 (your deps require it)
     }
 
     environment {
@@ -43,16 +43,15 @@ pipeline {
             }
         }
 
-        stage('Generate Version') {
+        stage('Read Semantic Version') {
             steps {
                 script {
-                    def shortSha = sh(
-                        script: "git rev-parse --short HEAD",
+                    env.IMAGE_VERSION = sh(
+                        script: "node -p \"require('./backend/package.json').version\"",
                         returnStdout: true
                     ).trim()
 
-                    env.IMAGE_VERSION = "${BUILD_NUMBER}-${shortSha}"
-                    echo "Image Version: ${env.IMAGE_VERSION}"
+                    echo "Using Semantic Version: ${env.IMAGE_VERSION}"
                 }
             }
         }
