@@ -11,7 +11,7 @@ const bootstrap = async () => {
 
         const adminData = {
             name: 'System Admin',
-            email: 'admin@naka.com',
+            email: 'admin@naka.com'.toLowerCase(),
             password: 'adminpassword123',
             role: 'admin'
         };

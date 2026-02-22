@@ -17,10 +17,12 @@ pipeline {
         DOCKER_USER = 'kshitij2511'
         DEPLOY_HOST = '51.21.1.228'
         COMPOSE_DIR = '/home/ec2-user/naka'
+        GIT_REPO = 'github.com/kshitijx07/naka.erp.git'
+        BRANCH = 'main'
+        JWT_SECRET = 'supersecretkey123'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -50,7 +52,7 @@ pipeline {
                         cd backend
                         npm version patch --no-git-tag-version
                         cd ..
-
+                        
                         cd frontend
                         npm version patch --no-git-tag-version
                         cd ..
@@ -69,8 +71,10 @@ pipeline {
 
         stage('Commit Version Bump') {
             steps {
+                // If 'git-hub-credentials' fails as usernamePassword, it might be a 'Secret text' (PAT)
+                // Use 'github-token' if that was your previous working ID
                 withCredentials([usernamePassword(
-                    credentialsId: 'git-hub-credentials',
+                    credentialsId: 'git-hub-credentials', 
                     usernameVariable: 'GIT_USER',
                     passwordVariable: 'GIT_PASS'
                 )]) {
@@ -81,7 +85,8 @@ pipeline {
                         git add backend/package.json frontend/package.json
                         git commit -m "chore: bump version [skip ci]" || echo "No changes"
 
-                        git push https://$GIT_USER:$GIT_PASS@github.com/kshitijx07/naka.erp HEAD:main
+                        # Use authenticated URL for push
+                        git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO} HEAD:${BRANCH}
                     '''
                 }
             }
@@ -126,8 +131,14 @@ pipeline {
                     docker build -t ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ./backend
                     docker build -t ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION} ./frontend
 
+                    docker tag ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ${DOCKER_USER}/naka-backend:latest
+                    docker tag ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION} ${DOCKER_USER}/naka-frontend:latest
+
                     docker push ${DOCKER_USER}/naka-backend:${IMAGE_VERSION}
                     docker push ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION}
+
+                    docker push ${DOCKER_USER}/naka-backend:latest
+                    docker push ${DOCKER_USER}/naka-frontend:latest
                 """
             }
         }
@@ -147,10 +158,12 @@ pipeline {
                             cd ${COMPOSE_DIR}
 
                             export IMAGE_VERSION=${IMAGE_VERSION}
+                            export JWT_SECRET=${JWT_SECRET}
 
                             docker compose down --remove-orphans
                             docker compose pull
                             docker compose up -d
+
                             docker image prune -f
                         '
                     """

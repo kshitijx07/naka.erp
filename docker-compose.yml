@@ -23,6 +23,7 @@ services:
       - PORT=5000
       - MONGO_URI=mongodb://mongodb:27017/naka
       - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
       - IMAGE_VERSION=${IMAGE_VERSION}
     networks:
       - naka-network
