@@ -10,7 +10,7 @@ pipeline {
     }
 
     tools {
-        nodejs 'node20'   // IMPORTANT: use Node 20 (your deps require it)
+        nodejs 'node18'   // IMPORTANT: use Node 20 (your deps require it)
     }
 
     environment {
