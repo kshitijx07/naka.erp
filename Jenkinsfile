@@ -63,7 +63,7 @@ pipeline {
                     ).trim()
 
                     env.IMAGE_VERSION = version
-                    echo "New Version: ${env.IMAGE_VERSION}"
+                    echo "Unified Project Version: ${env.IMAGE_VERSION}"
                 }
             }
         }
