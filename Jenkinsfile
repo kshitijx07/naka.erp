@@ -13,7 +13,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_USER = 'kshitijx07'
+        DOCKER_NAMESPACE = 'kshitij2511'
         COMPOSE_DIR = '/home/ec2-user/naka'
         DEPLOY_HOST = '51.21.1.228'
     }
@@ -47,11 +47,13 @@ pipeline {
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'docker-hub-credentials',
-                        usernameVariable: 'DOCKER_USER',
+                        usernameVariable: 'DOCKER_LOGIN_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_LOGIN_USER" --password-stdin
+                    '''
                 }
             }
         }
@@ -98,11 +100,11 @@ pipeline {
                     def frontendVersion = readFile('frontend.version').trim()
 
                     sh """
-                        docker build -t ${DOCKER_USER}/naka-backend:v${backendVersion} ./backend
-                        docker build -t ${DOCKER_USER}/naka-frontend:v${frontendVersion} ./frontend
+                        docker build -t ${DOCKER_NAMESPACE}/naka-backend:v${backendVersion} ./backend
+                        docker build -t ${DOCKER_NAMESPACE}/naka-frontend:v${frontendVersion} ./frontend
 
-                        docker push ${DOCKER_USER}/naka-backend:v${backendVersion}
-                        docker push ${DOCKER_USER}/naka-frontend:v${frontendVersion}
+                        docker push ${DOCKER_NAMESPACE}/naka-backend:v${backendVersion}
+                        docker push ${DOCKER_NAMESPACE}/naka-frontend:v${frontendVersion}
                     """
                 }
             }
