@@ -135,8 +135,9 @@ pipeline {
                             ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
                                 cd ${COMPOSE_DIR}
 
-                                export IMAGE_VERSION=${IMAGE_VERSION}
-                                export JWT_SECRET=${JWT_SECRET}
+                                export IMAGE_VERSION="${IMAGE_VERSION}"
+                                export JWT_SECRET="${JWT_SECRET}"
+                                export JWT_REFRESH_SECRET="${JWT_SECRET}" 
 
                                 docker compose down --remove-orphans
                                 docker compose pull
