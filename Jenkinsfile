@@ -10,11 +10,11 @@ pipeline {
     }
 
     tools {
-        nodejs 'node18'   // IMPORTANT: use Node 20 (your deps require it)
+        nodejs 'node20'
     }
 
     environment {
-        DOCKER_NAMESPACE = 'kshitij2511'
+        DOCKER_USER = 'kshitij2511'
         DEPLOY_HOST = '51.21.1.228'
         COMPOSE_DIR = '/home/ec2-user/naka'
     }
@@ -36,22 +36,53 @@ pipeline {
                     ).trim()
 
                     if (msg.contains('[skip ci]')) {
-                        currentBuild.description = 'Skipped CI loop'
-                        error('CI loop detected')
+                        currentBuild.description = 'Skipped version bump commit'
+                        error('CI loop prevented')
                     }
                 }
             }
         }
 
-        stage('Read Semantic Version') {
+        stage('Increment Semantic Version') {
             steps {
                 script {
-                    env.IMAGE_VERSION = sh(
+                    sh '''
+                        cd backend
+                        npm version patch --no-git-tag-version
+                        cd ..
+
+                        cd frontend
+                        npm version patch --no-git-tag-version
+                        cd ..
+                    '''
+
+                    def version = sh(
                         script: "node -p \"require('./backend/package.json').version\"",
                         returnStdout: true
                     ).trim()
 
-                    echo "Using Semantic Version: ${env.IMAGE_VERSION}"
+                    env.IMAGE_VERSION = version
+                    echo "New Version: ${env.IMAGE_VERSION}"
+                }
+            }
+        }
+
+        stage('Commit Version Bump') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'git-hub-credentials',
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_PASS'
+                )]) {
+                    sh '''
+                        git config user.email "jenkins@naka.com"
+                        git config user.name "jenkins"
+
+                        git add backend/package.json frontend/package.json
+                        git commit -m "chore: bump version [skip ci]" || echo "No changes"
+
+                        git push https://$GIT_USER:$GIT_PASS@github.com/kshitijx07/naka.erp HEAD:main
+                    '''
                 }
             }
         }
@@ -60,11 +91,11 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-hub-credentials',
-                    usernameVariable: 'DOCKER_USER',
+                    usernameVariable: 'DOCKER_LOGIN',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_LOGIN" --password-stdin
                     '''
                 }
             }
@@ -92,11 +123,11 @@ pipeline {
         stage('Build & Push Images') {
             steps {
                 sh """
-                    docker build -t ${DOCKER_NAMESPACE}/naka-backend:${IMAGE_VERSION} ./backend
-                    docker build -t ${DOCKER_NAMESPACE}/naka-frontend:${IMAGE_VERSION} ./frontend
+                    docker build -t ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ./backend
+                    docker build -t ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION} ./frontend
 
-                    docker push ${DOCKER_NAMESPACE}/naka-backend:${IMAGE_VERSION}
-                    docker push ${DOCKER_NAMESPACE}/naka-frontend:${IMAGE_VERSION}
+                    docker push ${DOCKER_USER}/naka-backend:${IMAGE_VERSION}
+                    docker push ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION}
                 """
             }
         }
@@ -105,8 +136,6 @@ pipeline {
             steps {
                 sshagent(['ec2-server-key']) {
                     sh """
-                        set -e
-
                         ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
                             mkdir -p ${COMPOSE_DIR}
                         '
@@ -115,7 +144,6 @@ pipeline {
                             ec2-user@${DEPLOY_HOST}:${COMPOSE_DIR}/docker-compose.yml
 
                         ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
-                            set -e
                             cd ${COMPOSE_DIR}
 
                             export IMAGE_VERSION=${IMAGE_VERSION}
