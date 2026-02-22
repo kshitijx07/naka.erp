@@ -1,48 +1,31 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:6
     container_name: mongodb
-    restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
-    networks:
-      - erp-network
 
   backend:
-    image: kshitijx07/erp-backend:${BACKEND_VERSION}
-    container_name: erp-backend
-    restart: always
+    image: kshitij2511/naka-backend:${BACKEND_VERSION}
+    container_name: naka-backend
     ports:
       - "5000:5000"
     environment:
-      NODE_ENV: production
-      PORT: 5000
-      MONGO_URI: mongodb://mongodb:27017/textile_erp
-      JWT_SECRET: supersecretkey123
-      JWT_REFRESH_SECRET: supersecretrefreshkey123
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb:27017/textile_erp
     depends_on:
       - mongodb
-    networks:
-      - erp-network
 
   frontend:
-    image: kshitijx07/erp-frontend:${FRONTEND_VERSION}
-    container_name: erp-frontend
-    restart: always
+    image: kshitij2511/naka-frontend:${FRONTEND_VERSION}
+    container_name: naka-frontend
     ports:
       - "5173:5173"
     depends_on:
       - backend
-    networks:
-      - erp-network
-
-networks:
-  erp-network:
-    driver: bridge
 
 volumes:
   mongo-data:
