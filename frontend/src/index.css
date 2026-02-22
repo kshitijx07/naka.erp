@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+/* =========================
+   THEME (NAKA STYLE)
+   ========================= */
+@theme {
+  /* Background System */
+  --color-background: #f3f3f3;
+  --color-surface: #ffffff;
+  --color-border: #e5e5e5;
+
+  /* Text */
+  --color-text-primary: #111111;
+  --color-text-secondary: #555555;
+
+  /* Accent (Minimal Lime) */
+  --color-accent: #9EFF00;
+
+  /* Typography */
+  --font-display: 'Inter', 'Helvetica Neue', sans-serif;
+  --font-sans: 'Inter', 'Helvetica Neue', sans-serif;
+
+  /* Shadow (Very Subtle) */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  /* Transitions */
+  --transition-default: all 0.25s ease;
+}
+
+/* =========================
+   BASE
+   ========================= */
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    line-height: 1.1;
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* =========================
+   LAYOUT UTILITIES
+   ========================= */
+@layer utilities {
+
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+
+  .border-neutral-light {
+    border: 1px solid var(--color-border);
+  }
+
+  .container-wide {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .section-spacing {
+    padding: 6rem 0;
+  }
+
+  /* =========================
+     NAVIGATION
+     ========================= */
+  .nav-bar {
+    background-color: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav-link {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    transition: var(--transition-default);
+  }
+
+  .nav-link:hover {
+    opacity: 0.6;
+  }
+
+  .nav-link.active {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* =========================
+     BUTTONS
+     ========================= */
+
+  .btn-primary {
+    background-color: #111111;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid #111111;
+    transition: var(--transition-default);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary:hover {
+    background-color: #000000;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background-color: #ffffff;
+    color: #111111;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border: 1px solid #111111;
+    transition: var(--transition-default);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-secondary:hover {
+    background-color: #f7f7f7;
+  }
+
+  .btn-accent {
+    background-color: var(--color-accent);
+    color: #111111;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    border: 1px solid var(--color-accent);
+    transition: var(--transition-default);
+  }
+
+  .btn-accent:hover {
+    background-color: #8be600;
+    border-color: #8be600;
+  }
+
+  /* =========================
+     CARD / SURFACE
+     ========================= */
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    padding: 2rem;
+  }
+
+  /* =========================
+     HERO
+     ========================= */
+  .hero-heading {
+    font-size: clamp(3rem, 5vw, 5rem);
+    line-height: 1.05;
+    font-weight: 700;
+  }
+
+  .hero-subtext {
+    font-size: 1.1rem;
+    max-width: 520px;
+    margin-top: 1.5rem;
+  }
+}
+
+/* =========================
+   SCROLLBAR (Minimal)
+   ========================= */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #bdbdbd;
+}
