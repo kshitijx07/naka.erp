@@ -1,31 +1,23 @@
+version: "3.9"
+
 services:
+  backend:
+    image: kshitij2511/naka-backend:${IMAGE_VERSION}
+    container_name: naka-backend
+    restart: always
+    ports:
+      - "5000:5000"
+
+  frontend:
+    image: kshitij2511/naka-frontend:${IMAGE_VERSION}
+    container_name: naka-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+
   mongodb:
     image: mongo:6
     container_name: mongodb
+    restart: always
     ports:
       - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
-  backend:
-    image: kshitij2511/naka-backend:${BACKEND_VERSION}
-    container_name: naka-backend
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=production
-      - PORT=5000
-      - MONGO_URI=mongodb://mongodb:27017/textile_erp
-    depends_on:
-      - mongodb
-
-  frontend:
-    image: kshitij2511/naka-frontend:${FRONTEND_VERSION}
-    container_name: naka-frontend
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
-
-volumes:
-  mongo-data:
