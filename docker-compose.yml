@@ -1,23 +1,49 @@
 version: "3.9"
 
 services:
+
+  mongodb:
+    image: mongo:6
+    container_name: naka-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - naka-network
+
   backend:
     image: kshitij2511/naka-backend:${IMAGE_VERSION}
     container_name: naka-backend
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      - mongodb
     ports:
       - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb:27017/naka
+      - NODE_ENV=production
+    networks:
+      - naka-network
 
   frontend:
     image: kshitij2511/naka-frontend:${IMAGE_VERSION}
     container_name: naka-frontend
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      - backend
     ports:
       - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:5000
+    networks:
+      - naka-network
 
-  mongodb:
-    image: mongo:6
-    container_name: mongodb
-    restart: always
-    ports:
-      - "27017:27017"
+volumes:
+  mongo_data:
+
+networks:
+  naka-network:
+    driver: bridge
