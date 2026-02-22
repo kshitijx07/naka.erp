@@ -19,7 +19,6 @@ pipeline {
         COMPOSE_DIR = '/home/ec2-user/naka'
         GIT_REPO = 'github.com/kshitijx07/naka.erp.git'
         BRANCH = 'main'
-        JWT_SECRET = 'supersecretkey123'
     }
 
     stages {
@@ -71,8 +70,6 @@ pipeline {
 
         stage('Commit Version Bump') {
             steps {
-                // If 'git-hub-credentials' fails as usernamePassword, it might be a 'Secret text' (PAT)
-                // Use 'github-token' if that was your previous working ID
                 withCredentials([usernamePassword(
                     credentialsId: 'git-hub-credentials', 
                     usernameVariable: 'GIT_USER',
@@ -85,7 +82,6 @@ pipeline {
                         git add backend/package.json frontend/package.json
                         git commit -m "chore: bump version [skip ci]" || echo "No changes"
 
-                        # Use authenticated URL for push
                         git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO} HEAD:${BRANCH}
                     '''
                 }
@@ -102,25 +98,6 @@ pipeline {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_LOGIN" --password-stdin
                     '''
-                }
-            }
-        }
-
-        stage('Install Dependencies') {
-            parallel {
-                stage('Backend') {
-                    steps {
-                        dir('backend') {
-                            sh 'npm install'
-                        }
-                    }
-                }
-                stage('Frontend') {
-                    steps {
-                        dir('frontend') {
-                            sh 'npm install'
-                        }
-                    }
                 }
             }
         }
@@ -145,28 +122,30 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent(['ec2-server-key']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
-                            mkdir -p ${COMPOSE_DIR}
-                        '
+                withCredentials([string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')]) {
+                    sshagent(['ec2-server-key']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
+                                mkdir -p ${COMPOSE_DIR}
+                            '
 
-                        scp -o StrictHostKeyChecking=no docker-compose.yml \
-                            ec2-user@${DEPLOY_HOST}:${COMPOSE_DIR}/docker-compose.yml
+                            scp -o StrictHostKeyChecking=no docker-compose.yml \
+                                ec2-user@${DEPLOY_HOST}:${COMPOSE_DIR}/docker-compose.yml
 
-                        ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
-                            cd ${COMPOSE_DIR}
+                            ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
+                                cd ${COMPOSE_DIR}
 
-                            export IMAGE_VERSION=${IMAGE_VERSION}
-                            export JWT_SECRET=${JWT_SECRET}
+                                export IMAGE_VERSION=${IMAGE_VERSION}
+                                export JWT_SECRET=${JWT_SECRET}
 
-                            docker compose down --remove-orphans
-                            docker compose pull
-                            docker compose up -d
+                                docker compose down --remove-orphans
+                                docker compose pull
+                                docker compose up -d
 
-                            docker image prune -f
-                        '
-                    """
+                                docker image prune -f
+                            '
+                        """
+                    }
                 }
             }
         }

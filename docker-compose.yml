@@ -4,8 +4,6 @@ services:
     image: mongo:6
     container_name: naka-mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
     volumes:
       - mongo_data:/data/db
     networks:
@@ -24,7 +22,6 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/naka
       - NODE_ENV=production
       - JWT_SECRET=${JWT_SECRET}
-      - IMAGE_VERSION=${IMAGE_VERSION}
     networks:
       - naka-network
 
