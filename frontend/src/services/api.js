@@ -4,14 +4,20 @@ const getBaseURL = () => {
     const envUrl = import.meta.env.VITE_API_URL;
     console.log('Environment VITE_API_URL:', envUrl);
 
-    // If VITE_API_URL is missing, or is 'backend', or is 'localhost' (at runtime on server)
-    // then use the current browser hostname
+    let finalUrl = envUrl;
+
+    // Fallback if missing or internal hostname
     if (!envUrl || envUrl.includes('backend') || envUrl.includes('localhost')) {
-        const url = `http://${window.location.hostname}:5000/api`;
-        console.log('Falling back to dynamic URL:', url);
-        return url;
+        finalUrl = `http://${window.location.hostname}:5000`;
     }
-    return envUrl;
+
+    // Ensure it ends with /api
+    if (!finalUrl.endsWith('/api')) {
+        finalUrl = finalUrl.endsWith('/') ? `${finalUrl}api` : `${finalUrl}/api`;
+    }
+
+    console.log('Final resolved API URL:', finalUrl);
+    return finalUrl;
 };
 
 const api = axios.create({
