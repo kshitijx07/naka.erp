@@ -7,27 +7,35 @@ dotenv.config();
 const bootstrap = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        console.log('Connected to MongoDB');
+        console.log('Connected to MongoDB:', process.env.MONGO_URI);
 
-        const adminExists = await User.findOne({ email: 'admin@naka.com' });
-        if (adminExists) {
-            console.log('Admin user already exists');
-            process.exit(0);
-        }
-
-        await User.create({
+        const adminData = {
             name: 'System Admin',
             email: 'admin@naka.com',
-            password: 'adminpassword123', // You should change this after login
+            password: 'adminpassword123',
             role: 'admin'
-        });
+        };
 
-        console.log('Admin user created successfully');
+        const existingUser = await User.findOne({ email: adminData.email });
+
+        if (existingUser) {
+            console.log('User exists. Updating password and role to ensure access...');
+            existingUser.password = adminData.password;
+            existingUser.role = adminData.role;
+            await existingUser.save();
+            console.log('Admin user updated successfully');
+        } else {
+            await User.create(adminData);
+            console.log('Admin user created successfully');
+        }
+
+        console.log('--- LOGIN CREDENTIALS ---');
         console.log('Email: admin@naka.com');
         console.log('Password: adminpassword123');
+        console.log('-------------------------');
         process.exit(0);
     } catch (error) {
-        console.error('Error creating admin user:', error.message);
+        console.error('Error during bootstrap:', error.message);
         process.exit(1);
     }
 };
