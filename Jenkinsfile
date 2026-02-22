@@ -71,9 +71,9 @@ pipeline {
         stage('Commit Version Bump') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'git-hub-credentials', 
+                    credentialsId: 'github-token', 
                     usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_PASS'
+                    passwordVariable: 'GIT_TOKEN'
                 )]) {
                     sh '''
                         git config user.email "jenkins@naka.com"
@@ -82,7 +82,7 @@ pipeline {
                         git add backend/package.json frontend/package.json
                         git commit -m "chore: bump version [skip ci]" || echo "No changes"
 
-                        git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO} HEAD:${BRANCH}
+                        git push https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO} HEAD:${BRANCH}
                     '''
                 }
             }
