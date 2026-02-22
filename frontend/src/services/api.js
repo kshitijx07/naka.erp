@@ -1,7 +1,21 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+    const envUrl = import.meta.env.VITE_API_URL;
+    console.log('Environment VITE_API_URL:', envUrl);
+
+    // If VITE_API_URL is missing, or is 'backend', or is 'localhost' (at runtime on server)
+    // then use the current browser hostname
+    if (!envUrl || envUrl.includes('backend') || envUrl.includes('localhost')) {
+        const url = `http://${window.location.hostname}:5000/api`;
+        console.log('Falling back to dynamic URL:', url);
+        return url;
+    }
+    return envUrl;
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5000/api`,
+    baseURL: getBaseURL(),
     headers: {
         'Content-Type': 'application/json',
     },
