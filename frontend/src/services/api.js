@@ -3,17 +3,15 @@ import axios from 'axios';
 const getBaseURL = () => {
     // In development (using .env.development), VITE_API_URL is set to '/api'
     // to leverage the Vite proxy (configured in vite.config.js).
-    // In production, it should be the full URL (e.g., http://51.21.1.228:5000/api).
+    // In production, it should be the full URL.
     const envUrl = import.meta.env.VITE_API_URL;
 
     if (envUrl) {
-        console.log('Using API URL from environment:', envUrl);
         return envUrl;
     }
 
     // Fallback logic if VITE_API_URL is missing
     const fallbackUrl = `http://${window.location.hostname}:5000/api`;
-    console.log('Fallback API URL:', fallbackUrl);
     return fallbackUrl;
 };
 
