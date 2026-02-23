@@ -37,7 +37,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://51.21.1.228:5000
+      - VITE_API_URL=http://13.48.130.59:5000/api
     networks:
       - naka-network
 
