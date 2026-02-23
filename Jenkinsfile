@@ -39,7 +39,7 @@ pipeline {
             when { expression { env.IS_SKIP_CI == 'false' } }
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
+                    credentialsId: 'docker-hub-credentials',
                     usernameVariable: 'DOCKER_USER_VAR',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
