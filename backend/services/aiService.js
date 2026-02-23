@@ -24,7 +24,7 @@ const getSalesDataTool = new DynamicStructuredTool({
             const dateLimit = new Date();
             dateLimit.setDate(dateLimit.getDate() - (days || 30));
 
-            const sales = await Sales.find({ date: { $gte: dateLimit } });
+            const sales = await Sales.find({ date: { $gte: dateLimit } }).select('totalAmount metersSold').lean();
             const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
             const totalMeters = sales.reduce((sum, sale) => sum + sale.metersSold, 0);
 
@@ -45,7 +45,7 @@ const getInventoryTool = new DynamicStructuredTool({
     schema: z.object({}), // No specific arguments needed
     func: async () => {
         try {
-            const items = await RawMaterial.find({});
+            const items = await RawMaterial.find({}).select('materialName remainingStock lowStockThreshold').lean();
             const lowStockItems = items.filter(item => item.remainingStock <= item.lowStockThreshold);
 
             return JSON.stringify({
@@ -68,16 +68,25 @@ const getProductionOrdersTool = new DynamicStructuredTool({
     func: async ({ status }) => {
         try {
             const query = status ? { status } : {};
-            const orders = await ProductionOrder.find(query).populate('assignedMachine').populate('assignedWorker');
+            const orders = await ProductionOrder.find(query)
+                .select('orderNumber productName status targetQuantity producedQuantity assignedMachine assignedWorker')
+                .populate('assignedMachine', 'name')
+                .populate('assignedWorker', 'name')
+                .sort({ createdAt: -1 })
+                .limit(20) // Securely limit data size sent to LLM for speed
+                .lean();
 
             return JSON.stringify({
                 count: orders.length,
+                note: orders.length === 20 ? "Results limited to 20 most recent to ensure fast responses." : "",
                 orders: orders.map(o => ({
                     orderNumber: o.orderNumber,
                     productName: o.productName,
                     status: o.status,
                     targetQuantity: o.targetQuantity,
-                    producedQuantity: o.producedQuantity
+                    producedQuantity: o.producedQuantity,
+                    machine: o.assignedMachine?.name || 'None',
+                    worker: o.assignedWorker?.name || 'None'
                 }))
             });
         } catch (error) {
@@ -106,11 +115,13 @@ const initializeAgent = () => {
     });
 
     const prompt = ChatPromptTemplate.fromMessages([
-        ["system", `You are a helpful and intelligent ERP Assistant for Naka Integrated Systems. 
+        ["system", `You are a secure, extremely fast, and intelligent ERP Assistant for Naka Integrated Systems. 
 You can query the database using the provided tools to answer user questions about sales, inventory, and production.
-Always answer accurately based ONLY on the data returned by the tools.
-If the user asks for a chart or graph, structure your final response to include a 'chartConfig' object in JSON.
-For standard text replies, just respond naturally.`],
+- Always answer accurately based ONLY on the data returned by the tools.
+- Do NOT guess or hallucinate any numbers or information.
+- Be concise. Keep your text responses short and tightly focused on the user's question to save generation time.
+- If the user asks for a chart or graph, structure your final response to include a 'chartConfig' object in JSON.
+- For standard text replies, just respond naturally but briefly.`],
         ["placeholder", "{chat_history}"],
         ["human", "{input}"],
         ["placeholder", "{agent_scratchpad}"],

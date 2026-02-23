@@ -32,6 +32,7 @@ const productionOrderSchema = mongoose.Schema(
             type: String,
             enum: ['Planned', 'In Progress', 'Completed', 'Cancelled', 'On Hold'],
             default: 'Planned',
+            index: true,
         },
         priority: {
             type: String,

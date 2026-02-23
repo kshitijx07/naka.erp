@@ -18,6 +18,7 @@ const rawMaterialSchema = mongoose.Schema(
         remainingStock: {
             type: Number,
             required: true,
+            index: true,
         },
         category: {
             type: String,
