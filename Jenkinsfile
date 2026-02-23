@@ -92,7 +92,10 @@ pipeline {
         stage('Deploy to EC2') {
             when { expression { env.IS_SKIP_CI == 'false' } }
             steps {
-                withCredentials([string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')]) {
+                withCredentials([
+                    string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET'),
+                    string(credentialsId: 'gemini-api-key', variable: 'GEMINI_API_KEY')
+                ]) {
                     sshagent(['ec2-server-key']) {
                         sh """
                             ssh -o StrictHostKeyChecking=no ec2-user@${DEPLOY_HOST} '
@@ -108,6 +111,7 @@ pipeline {
                                 export IMAGE_VERSION="${IMAGE_VERSION}"
                                 export JWT_SECRET="${JWT_SECRET}"
                                 export JWT_REFRESH_SECRET="${JWT_SECRET}"
+                                export GEMINI_API_KEY="${GEMINI_API_KEY}"
 
                                 docker compose pull
                                 docker compose up -d --remove-orphans
