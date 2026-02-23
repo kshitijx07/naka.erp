@@ -27,18 +27,19 @@ pipeline {
                 checkout scm
                 script {
                     def msg = sh(script: "git log -1 --pretty=%B", returnStdout: true).trim()
-                    env.IS_SKIP_CI = msg.contains('[skip ci]')
+                    env.IS_SKIP_CI = msg.contains('[skip ci]').toString()
                     echo "IS_SKIP_CI: ${env.IS_SKIP_CI}"
                 }
             }
         }
 
-        stage('Increment Semantic Version') {
+        stage('Build & Push Images') {
             when {
                 expression { env.IS_SKIP_CI == 'false' }
             }
             steps {
                 script {
+                    // Get version for tagging - we do this here now
                     sh '''
                         cd backend
                         npm version patch --no-git-tag-version
@@ -56,68 +57,21 @@ pipeline {
 
                     env.IMAGE_VERSION = version
                     echo "Unified Project Version: ${env.IMAGE_VERSION}"
+
+                    sh """
+                        docker build -t ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ./backend
+                        docker build -t ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION} ./frontend
+
+                        docker tag ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ${DOCKER_USER}/naka-backend:latest
+                        docker tag ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION} ${DOCKER_USER}/naka-frontend:latest
+
+                        docker push ${DOCKER_USER}/naka-backend:${IMAGE_VERSION}
+                        docker push ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION}
+
+                        docker push ${DOCKER_USER}/naka-backend:latest
+                        docker push ${DOCKER_USER}/naka-frontend:latest
+                    """
                 }
-            }
-        }
-
-        stage('Commit Version Bump') {
-            when {
-                expression { env.IS_SKIP_CI == 'false' }
-            }
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'github-token', 
-                    usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_TOKEN'
-                )]) {
-                    sh '''
-                        git config user.email "jenkins@naka.com"
-                        git config user.name "jenkins"
-
-                        git add backend/package.json frontend/package.json
-                        git commit -m "chore: bump version [skip ci]" || echo "No changes"
-
-                        git push https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO} HEAD:${BRANCH}
-                    '''
-                }
-            }
-        }
-
-        stage('Docker Login') {
-            when {
-                expression { env.IS_SKIP_CI == 'false' }
-            }
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-credentials',
-                    usernameVariable: 'DOCKER_LOGIN',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_LOGIN" --password-stdin
-                    '''
-                }
-            }
-        }
-
-        stage('Build & Push Images') {
-            when {
-                expression { env.IS_SKIP_CI == 'false' }
-            }
-            steps {
-                sh """
-                    docker build -t ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ./backend
-                    docker build -t ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION} ./frontend
-
-                    docker tag ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ${DOCKER_USER}/naka-backend:latest
-                    docker tag ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION} ${DOCKER_USER}/naka-frontend:latest
-
-                    docker push ${DOCKER_USER}/naka-backend:${IMAGE_VERSION}
-                    docker push ${DOCKER_USER}/naka-frontend:${IMAGE_VERSION}
-
-                    docker push ${DOCKER_USER}/naka-backend:latest
-                    docker push ${DOCKER_USER}/naka-frontend:latest
-                """
             }
         }
 
@@ -151,6 +105,29 @@ pipeline {
                             '
                         """
                     }
+                }
+            }
+        }
+
+        stage('Commit Version Bump') {
+            when {
+                expression { env.IS_SKIP_CI == 'false' }
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-token', 
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_TOKEN'
+                )]) {
+                    sh '''
+                        git config user.email "jenkins@naka.com"
+                        git config user.name "jenkins"
+
+                        git add backend/package.json frontend/package.json
+                        git commit -m "chore: bump version [skip ci]" || echo "No changes"
+
+                        git push https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO} HEAD:${BRANCH}
+                    '''
                 }
             }
         }
