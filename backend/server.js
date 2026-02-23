@@ -16,12 +16,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://13.48.130.59:5173', // Add public IP
-    process.env.CLIENT_URL
-  ].filter(Boolean),
+  origin: (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173').split(','),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
