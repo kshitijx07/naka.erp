@@ -134,6 +134,9 @@ You can query the database using the provided tools to answer user questions abo
 // Initialize on startup
 initializeAgent();
 
+const queryCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 // --- Main Chat Function ---
 const processChat = async (input, chatHistory = []) => {
     if (!process.env.GEMINI_API_KEY) {
@@ -142,6 +145,18 @@ const processChat = async (input, chatHistory = []) => {
 
     if (!agentExecutor) {
         throw new Error("Agent not initialized.");
+    }
+
+    // Secure Cache Optimization: Skip LLM completely if exact input was queried recently
+    const cacheKey = input.trim().toLowerCase();
+    if (queryCache.has(cacheKey)) {
+        const cached = queryCache.get(cacheKey);
+        if (Date.now() - cached.timestamp < CACHE_TTL_MS) {
+            console.log("Serving AI response from blazing fast memory cache.");
+            return cached.response;
+        } else {
+            queryCache.delete(cacheKey); // Expire old cache
+        }
     }
 
     try {
@@ -153,6 +168,12 @@ const processChat = async (input, chatHistory = []) => {
         const result = await agentExecutor.invoke({
             input: input,
             chat_history: formattedHistory,
+        });
+
+        // Store result in memory cache securely
+        queryCache.set(cacheKey, {
+            response: result.output,
+            timestamp: Date.now()
         });
 
         return result.output;

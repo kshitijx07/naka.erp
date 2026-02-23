@@ -72,12 +72,23 @@ const AICopilot = () => {
             console.error('AI Chat Error:', error);
 
             const isMissingKey = error.response?.data?.message?.includes('GEMINI_API_KEY');
+            const status = error.response?.status;
 
             if (isMissingKey) {
                 setHasApiKeyError(true);
                 setMessages([...updatedMessages, {
                     role: 'assistant',
                     content: '⚠️ **Missing API Key**\n\nI need a Google Gemini API key to function. Please add `GEMINI_API_KEY=your_key_here` to the backend `.env` file and restart the server.'
+                }]);
+            } else if (status === 429) {
+                setMessages([...updatedMessages, {
+                    role: 'assistant',
+                    content: '⚠️ **Too Many Requests**\n\nThe AI Copilot is currently processing too many questions (Free Tier Limit). Please wait about 15 seconds and try asking again.'
+                }]);
+            } else if (status === 401) {
+                setMessages([...updatedMessages, {
+                    role: 'assistant',
+                    content: '⚠️ **Session Expired**\n\nYour session has expired. Please log out and log back in to continue using the Copilot.'
                 }]);
             } else {
                 setMessages([...updatedMessages, {

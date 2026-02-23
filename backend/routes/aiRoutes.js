@@ -22,6 +22,14 @@ router.post('/chat', protect, async (req, res) => {
         });
     } catch (error) {
         console.error('AI Route Error:', error.message);
+
+        // Handle Gemini Quota / Rate Limiting
+        if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('Too Many Requests')) {
+            return res.status(429).json({
+                message: 'AI Service is currently busy. Please wait 10-20 seconds and try again. (Free Tier Limit Reached)'
+            });
+        }
+
         res.status(500).json({
             message: error.message || 'Error processing AI chat'
         });
