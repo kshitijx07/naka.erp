@@ -25,6 +25,7 @@ services:
       - NODE_ENV=production
       - JWT_SECRET=${JWT_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - CLIENT_URL=http://13.48.130.59:5173
     networks:
       - naka-network
 
