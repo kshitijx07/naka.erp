@@ -11,6 +11,8 @@ import Materials from './pages/Materials';
 import Maintenance from './pages/Maintenance';
 import Home from './pages/Home';
 
+import AICopilot from './components/AICopilot/AICopilot';
+
 // Protected Route Component (Placeholder)
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -46,6 +48,9 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+
+        {/* Global UI Components */}
+        <AICopilot />
       </Router>
     </Provider>
   );

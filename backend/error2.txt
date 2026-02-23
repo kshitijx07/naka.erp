@@ -1,0 +1,18 @@
+GEMINI_API_KEY is not set. The AI Agent will return an error if called.
+C:\Users\kshit\Desktop\SE PROJECT\backend\node_modules\langchain\dist\agents\tool_calling\index.cjs:66
+        throw new Error(`This agent requires that the "bind_tools()" method be implemented on the input model.`);
+        ^
+
+Error: This agent requires that the "bind_tools()" method be implemented on the input model.
+    at createToolCallingAgent (C:\Users\kshit\Desktop\SE PROJECT\backend\node_modules\langchain\dist\agents\tool_calling\index.cjs:66:15)
+    at initializeAgent (C:\Users\kshit\Desktop\SE PROJECT\backend\services\aiService.js:118:19)
+    at Object.<anonymous> (C:\Users\kshit\Desktop\SE PROJECT\backend\services\aiService.js:123:1)
+    at Module._compile (node:internal/modules/cjs/loader:1565:14)
+    at Object..js (node:internal/modules/cjs/loader:1708:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:219:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+
+Node.js v22.12.0

@@ -42,6 +42,7 @@ app.use('/api/materials', require('./routes/materialRoutes'));
 app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/production-orders', require('./routes/productionOrderRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Cron Jobs
 const setupCronJobs = require('./cron/salaryCron');

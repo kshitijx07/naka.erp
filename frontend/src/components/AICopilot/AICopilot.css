@@ -1,0 +1,239 @@
+.ai-copilot-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+}
+
+.ai-copilot-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0f172a, #334155);
+    color: white;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-copilot-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.ai-copilot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 400px;
+    height: 600px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transform-origin: bottom right;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.ai-copilot-header {
+    background: linear-gradient(135deg, #0f172a, #1a202c);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-copilot-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.ai-copilot-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.ai-copilot-close:hover {
+    color: white;
+}
+
+.ai-copilot-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background-color: #f8fafc;
+}
+
+.ai-message-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+}
+
+.ai-message-wrapper.user {
+    align-self: flex-end;
+}
+
+.ai-message-wrapper.assistant {
+    align-self: flex-start;
+}
+
+.ai-message-bubble {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.user .ai-message-bubble {
+    background-color: #0f172a;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.assistant .ai-message-bubble {
+    background-color: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.ai-copilot-input-area {
+    padding: 16px;
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 12px;
+}
+
+.ai-copilot-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.ai-copilot-input:focus {
+    border-color: #0f172a;
+}
+
+.ai-copilot-send {
+    background-color: #0f172a;
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.ai-copilot-send:hover:not(:disabled) {
+    background-color: #1e293b;
+}
+
+.ai-copilot-send:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.ai-typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 4px 8px;
+}
+
+.ai-typing-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #cbd5e1;
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out both;
+}
+
+.ai-typing-dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.ai-typing-dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
+
+/* Dynamic Renderer Styles */
+.dynamic-renderer-container {
+    margin-top: 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+/* Markdown Styles inside message bubbles */
+.ai-message-bubble p {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.ai-message-bubble p:last-child {
+    margin-bottom: 0;
+}
+
+.ai-message-bubble ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.ai-message-bubble strong {
+    font-weight: 600;
+    color: #0f172a;
+}

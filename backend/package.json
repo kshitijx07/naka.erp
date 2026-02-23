@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@langchain/core": "^0.1.62",
+    "@langchain/google-genai": "^0.0.23",
     "bcryptjs": "^3.0.3",
     "colors": "^1.4.0",
     "cors": "^2.8.6",
@@ -19,6 +21,7 @@
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "langchain": "^0.1.37",
     "mongoose": "^9.2.1",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
