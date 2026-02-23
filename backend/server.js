@@ -16,9 +16,10 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: '*', // For development/testing on IP, allow all
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', process.env.CLIENT_URL].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 app.use(helmet({
   crossOriginResourcePolicy: false,

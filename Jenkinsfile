@@ -15,7 +15,7 @@ pipeline {
 
     environment {
         DOCKER_USER = 'kshitij2511'
-        DEPLOY_HOST = '51.21.1.228'
+        DEPLOY_HOST = '13.48.130.59'
         COMPOSE_DIR = '/home/ec2-user/naka'
         GIT_REPO = 'github.com/kshitijx07/naka.erp.git'
         BRANCH = 'main'
