@@ -1,12 +1,15 @@
-const express = require('express');
+// Load env vars immediately
 const dotenv = require('dotenv');
+dotenv.config();
+
+// Polyfill fetch to fix Node 18+ undici IPv6 hang
+global.fetch = require('node-fetch');
+
+const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
-
-// Load env vars
-dotenv.config();
 
 // Connect to database
 connectDB();

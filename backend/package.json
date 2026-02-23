@@ -12,8 +12,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@langchain/core": "^0.1.62",
-    "@langchain/google-genai": "^0.0.23",
+    "@langchain/core": "^0.2.33",
+    "@langchain/google-genai": "^0.1.2",
+    "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "colors": "^1.4.0",
     "cors": "^2.8.6",
@@ -21,11 +22,12 @@
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
-    "langchain": "^0.1.37",
+    "langchain": "^0.2.20",
     "mongoose": "^9.2.1",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
+    "node-fetch": "^2.7.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {

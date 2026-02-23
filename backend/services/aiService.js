@@ -99,7 +99,7 @@ const initializeAgent = () => {
     }
 
     const llm = new ChatGoogleGenerativeAI({
-        model: "gemini-1.5-flash",
+        model: "gemini-flash-latest",
         apiKey: apiKey || "MISSING_KEY",
         temperature: 0,
     });
