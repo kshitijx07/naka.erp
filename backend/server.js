@@ -2,8 +2,8 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Polyfill fetch to fix Node 18+ undici IPv6 hang
-global.fetch = require('node-fetch');
+// Fix Node 18+ native fetch IPv6 connection hang
+require('node:dns').setDefaultResultOrder('ipv4first');
 
 const express = require('express');
 const cors = require('cors');

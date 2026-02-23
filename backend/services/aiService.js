@@ -2,6 +2,7 @@ const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 const { DynamicStructuredTool } = require("@langchain/core/tools");
 const { AgentExecutor, createToolCallingAgent } = require("langchain/agents");
 const { ChatPromptTemplate, MessagesPlaceholder } = require("@langchain/core/prompts");
+const { HumanMessage, AIMessage } = require("@langchain/core/messages");
 const { z } = require("zod");
 
 // Import Database Models
@@ -133,9 +134,14 @@ const processChat = async (input, chatHistory = []) => {
     }
 
     try {
+        const formattedHistory = chatHistory.map(msg => {
+            if (msg[0] === 'human') return new HumanMessage(msg[1]);
+            return new AIMessage(msg[1]);
+        });
+
         const result = await agentExecutor.invoke({
             input: input,
-            chat_history: chatHistory,
+            chat_history: formattedHistory,
         });
 
         return result.output;
