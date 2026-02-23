@@ -25,26 +25,18 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-            }
-        }
-
-        stage('Guard: Prevent CI Loop') {
-            steps {
                 script {
-                    def msg = sh(
-                        script: "git log -1 --pretty=%B",
-                        returnStdout: true
-                    ).trim()
-
-                    if (msg.contains('[skip ci]')) {
-                        currentBuild.description = 'Skipped version bump commit'
-                        error('CI loop prevented')
-                    }
+                    def msg = sh(script: "git log -1 --pretty=%B", returnStdout: true).trim()
+                    env.IS_SKIP_CI = msg.contains('[skip ci]')
+                    echo "IS_SKIP_CI: ${env.IS_SKIP_CI}"
                 }
             }
         }
 
         stage('Increment Semantic Version') {
+            when {
+                expression { env.IS_SKIP_CI == 'false' }
+            }
             steps {
                 script {
                     sh '''
@@ -69,6 +61,9 @@ pipeline {
         }
 
         stage('Commit Version Bump') {
+            when {
+                expression { env.IS_SKIP_CI == 'false' }
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'github-token', 
@@ -89,6 +84,9 @@ pipeline {
         }
 
         stage('Docker Login') {
+            when {
+                expression { env.IS_SKIP_CI == 'false' }
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-hub-credentials',
@@ -103,6 +101,9 @@ pipeline {
         }
 
         stage('Build & Push Images') {
+            when {
+                expression { env.IS_SKIP_CI == 'false' }
+            }
             steps {
                 sh """
                     docker build -t ${DOCKER_USER}/naka-backend:${IMAGE_VERSION} ./backend
@@ -121,6 +122,9 @@ pipeline {
         }
 
         stage('Deploy to EC2') {
+            when {
+                expression { env.IS_SKIP_CI == 'false' }
+            }
             steps {
                 withCredentials([string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')]) {
                     sshagent(['ec2-server-key']) {
